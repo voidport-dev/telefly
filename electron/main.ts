@@ -9,9 +9,7 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
-      devTools:
-        process.env.ENABLE_DEVTOOLS === "true" ||
-        process.env.NODE_ENV === "development",
+      devTools: process.env.ENABLE_DEVTOOLS === "true" || process.env.NODE_ENV === "development",
     },
   });
 
