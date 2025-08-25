@@ -1,0 +1,80 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  quality-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: TypeScript type check (renderer)
+        run: bun run tsc --noEmit
+
+      - name: TypeScript type check (electron)
+        run: bun run tsc -p electron/tsconfig.json --noEmit
+
+      - name: Run ESLint
+        run: bun run lint:eslint
+
+      - name: Run Stylelint
+        run: bun run lint:stylelint
+
+      - name: Build renderer
+        run: bun run build:renderer
+
+      - name: Build electron
+        run: bun run build:electron
+
+      - name: Full build test
+        run: bun run build
+
+  security-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Run security audit
+        run: bun audit
+
+  dependency-check:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
+      - name: Install dependencies
+        run: bun install
+
+      - name: Check for outdated dependencies
+        run: bun outdated
