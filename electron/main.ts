@@ -5,6 +5,9 @@ function createWindow() {
   const mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
+    minWidth: 450,
+    minHeight: 300,
+    title: "Telefly",
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,

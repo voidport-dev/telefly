@@ -13,9 +13,18 @@ export const Container = styled.div`
 
 export const Sidebar = styled(animated.div)`
   position: relative;
+  display: flex;
   flex-shrink: 0;
+  flex-direction: column;
   overflow: hidden;
   background: #222;
+`;
+
+export const SidebarContent = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 8px;
 `;
 
 export const HideSidebarButton = styled.button<{ $isVisible: boolean }>`
@@ -31,6 +40,32 @@ export const HideSidebarButton = styled.button<{ $isVisible: boolean }>`
   border: none;
   transform: ${({ $isVisible }) => ($isVisible ? "rotate(0deg)" : "rotate(180deg)")};
   transition: all 0.2s ease-in-out;
+
+  &:hover {
+    opacity: 0.75;
+  }
+`;
+
+export const LogOutButton = styled.button`
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  margin-inline: 8px;
+  margin-bottom: 8px;
+  overflow: hidden;
+  color: #fff;
+  white-space: nowrap;
+  cursor: pointer;
+  background: #111;
+  border: none;
+  transition: all 0.2s ease-in-out;
+
+  & > span {
+    overflow: hidden;
+    white-space: nowrap;
+  }
 
   &:hover {
     opacity: 0.75;
