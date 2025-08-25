@@ -53,7 +53,7 @@ export default function Home() {
         </HideSidebarButton>
         <SidebarContent></SidebarContent>
         <LogOutButton onClick={logOut}>
-          <LogOutIcon style={{ minWidth: 24 }} />
+          <LogOutIcon style={{ minWidth: "24px" }} />
           <animated.span style={textSpring}>Log Out</animated.span>
         </LogOutButton>
       </Sidebar>

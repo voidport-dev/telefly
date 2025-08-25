@@ -1,8 +1,7 @@
 module.exports = {
   customSyntax: "@stylelint/postcss-css-in-js",
   extends: [
-    "stylelint-config-standard",
-    "stylelint-config-recess-order"
+    "stylelint-config-standard"
   ],
   rules: {
     "unit-disallowed-list": ["dvh", "lvh", "svh"],
@@ -11,7 +10,9 @@ module.exports = {
       { ignoreShorthands: ["background"] }
     ],
     "selector-class-pattern": ["", {}],
-    "media-feature-range-notation": null
+    "media-feature-range-notation": null,
+    "no-invalid-position-declaration": null,
+    "nesting-selector-no-missing-scoping-root": null
   }
 };
 
