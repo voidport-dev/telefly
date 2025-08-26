@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
+import { TDLService } from "./tdl-service";
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -12,9 +13,12 @@ function createWindow() {
       nodeIntegration: false,
       contextIsolation: true,
       preload: path.join(__dirname, "preload.js"),
-      devTools: process.env.ENABLE_DEVTOOLS === "true" || process.env.NODE_ENV === "development",
+      // devTools: process.env.ENABLE_DEVTOOLS === "true" || process.env.NODE_ENV === "development",
+      devTools: true,
     },
   });
+
+  const _ = new TDLService();
 
   if (process.env.NODE_ENV === "development") {
     mainWindow.loadURL("http://localhost:3000/index.html", {

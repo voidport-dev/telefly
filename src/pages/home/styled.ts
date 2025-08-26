@@ -103,8 +103,9 @@ export const Input = styled.textarea`
   padding: 8px;
   border-radius: 8px;
   outline: none;
-  height: 40px;
-  max-height: 120px;
+  min-height: 40px;
+  max-height: calc(24px * 5 + 16px);
   overflow-y: auto;
   line-height: 24px;
+  field-sizing: content;
 `;

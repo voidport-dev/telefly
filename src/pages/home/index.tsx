@@ -1,7 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { useSpring, easings, animated } from "@react-spring/web";
 import { ArrowLeftToLine, LogOutIcon } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import {
   Container,
@@ -14,31 +15,19 @@ import {
   Header,
   Input,
 } from "./styled";
+import { useTDL } from "../../hooks/useTDL";
 
 export default function Home() {
+  const { getCurrentUser, init, logout } = useTDL();
+  const [user, setUser] = useState<any>(null);
+  const navigate = useNavigate();
   const [isSidebarVisible, setIsSidebarVisible] = useState(
     localStorage.getItem("ui.sidebar.visibility") === "true",
   );
   const [inputValue, setInputValue] = useState("");
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = e.target.value;
-    setInputValue(value);
-
-    const textarea = e.target;
-    textarea.style.height = "40px";
-
-    const lineHeight = 24;
-    const padding = 16;
-    const singleLineHeight = lineHeight + padding;
-    const maxHeight = lineHeight * 5 + padding;
-
-    const scrollHeight = textarea.scrollHeight;
-    const newHeight = Math.min(scrollHeight, maxHeight);
-
-    if (newHeight > singleLineHeight) {
-      textarea.style.height = `${newHeight}px`;
-    }
+    setInputValue(e.target.value);
   };
 
   const sidebarSpring = useSpring({
@@ -64,10 +53,29 @@ export default function Home() {
     localStorage.setItem("ui.sidebar.visibility", value.toString());
   };
 
-  const logOut = () => {
-    localStorage.removeItem("auth");
-    window.location.reload();
+  const logOut = async () => {
+    try {
+      await logout();
+      localStorage.removeItem("auth");
+      navigate("/login", { replace: true });
+    } catch (error) {
+      console.error("Logout failed:", error);
+      localStorage.removeItem("auth");
+      navigate("/login", { replace: true });
+    }
   };
+
+  useEffect(() => {
+    init();
+    getCurrentUser().then((user) => {
+      if (user.success) {
+        setUser(user.user);
+      } else {
+        localStorage.removeItem("auth");
+        navigate("/login", { replace: true });
+      }
+    });
+  }, []);
 
   return (
     <Container>
@@ -78,14 +86,24 @@ export default function Home() {
         <SidebarContent></SidebarContent>
         <LogOutButton onClick={logOut}>
           <LogOutIcon style={{ minWidth: "24px" }} />
-          <animated.span style={textSpring}>Log Out</animated.span>
+          <animated.span style={textSpring}>
+            Log Out{" "}
+            <i>
+              {user?.firstName} {user?.lastName}
+            </i>
+          </animated.span>
         </LogOutButton>
       </Sidebar>
 
       <Content>
         <Header />
         <Chat />
-        <Input value={inputValue} onChange={handleInputChange} placeholder="Type your message..." />
+        <Input
+          rows={1}
+          value={inputValue}
+          onChange={handleInputChange}
+          placeholder="Type your message..."
+        />
       </Content>
     </Container>
   );
