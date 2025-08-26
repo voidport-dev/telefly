@@ -1,12 +1,33 @@
 # Telefly
 
-A modern Electron app built with React, TypeScript, and Vite.
+A cross-platform third-party desktop client for Telegram built with Electron, React, TypeScript, and Vite.
+
+## About
+
+Telefly is a modern, feature-rich desktop application that provides an alternative to the official Telegram desktop client. Built with Electron for cross-platform compatibility, it offers a native desktop experience while maintaining the familiar Telegram interface and functionality.
 
 ## Tech Stack
 
 - **Frontend**: React 19 + TypeScript + Vite
 - **Desktop**: Electron
 - **Package Manager**: Compatible with npm, pnpm, and Bun
+
+## Roadmap
+
+### v0.1 - In Development
+
+- 🔄 Login (phone, QR code)
+- 🔄 Logout
+- 🔄 Messaging (text, photo, video, documents)
+
+### v0.2
+
+- 🔄 Voice messages
+- 🔄 Video messages
+- 🔄 Search functionality
+- 🔄 Code highlighting
+- 🔄 Call alternatives - meeting creation (Google Meet, Zoom, etc.)
+- 🔄 Multiple accounts support
 
 ## Prerequisites
 
@@ -99,7 +120,6 @@ telefly/
 ## Development Workflow
 
 1. The `dev` script runs three processes concurrently:
-
    - Vite dev server for React (port 3000)
    - TypeScript compilation for Electron
    - Electron app that connects to the dev server
