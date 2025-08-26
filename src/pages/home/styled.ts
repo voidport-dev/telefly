@@ -74,7 +74,37 @@ export const LogOutButton = styled.button`
 
 export const Content = styled.div`
   flex: 1;
-  padding: 8px;
   overflow: hidden;
   background: #222;
+  display: grid;
+  grid-template-rows: 50px 1fr auto;
+`;
+
+export const Header = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #111;
+`;
+
+export const Chat = styled.div`
+  flex: 1;
+`;
+
+export const Input = styled.textarea`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  resize: none;
+  background: #111;
+  border: none;
+  color: #fff;
+  font-size: 16px;
+  padding: 8px;
+  border-radius: 8px;
+  outline: none;
+  height: 40px;
+  max-height: 120px;
+  overflow-y: auto;
+  line-height: 24px;
 `;

@@ -10,12 +10,36 @@ import {
   HideSidebarButton,
   LogOutButton,
   SidebarContent,
+  Chat,
+  Header,
+  Input,
 } from "./styled";
 
 export default function Home() {
   const [isSidebarVisible, setIsSidebarVisible] = useState(
     localStorage.getItem("ui.sidebar.visibility") === "true",
   );
+  const [inputValue, setInputValue] = useState("");
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = e.target.value;
+    setInputValue(value);
+
+    const textarea = e.target;
+    textarea.style.height = "40px";
+
+    const lineHeight = 24;
+    const padding = 16;
+    const singleLineHeight = lineHeight + padding;
+    const maxHeight = lineHeight * 5 + padding;
+
+    const scrollHeight = textarea.scrollHeight;
+    const newHeight = Math.min(scrollHeight, maxHeight);
+
+    if (newHeight > singleLineHeight) {
+      textarea.style.height = `${newHeight}px`;
+    }
+  };
 
   const sidebarSpring = useSpring({
     width: isSidebarVisible ? 350 : 50,
@@ -59,7 +83,9 @@ export default function Home() {
       </Sidebar>
 
       <Content>
-        <h1>Telefly</h1>
+        <Header />
+        <Chat />
+        <Input value={inputValue} onChange={handleInputChange} placeholder="Type your message..." />
       </Content>
     </Container>
   );

@@ -21,4 +21,22 @@ export const globalStyles = css`
     color: #fff;
     background: #111;
   }
+
+  ::-webkit-scrollbar {
+    width: 8px;
+    background: #111;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #555;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #444;
+  }
+
+  scrollbar-color: #333 #222;
+  scrollbar-width: thin;
 `;
