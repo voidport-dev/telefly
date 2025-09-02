@@ -21,6 +21,8 @@ export const useTDL = () => {
     try {
       const result = await window.electronAPI.tdl.getAuthState();
 
+      if (result.error) setError(result.error);
+
       return result;
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
@@ -32,6 +34,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.loginWithPhone(phone);
+    if (res.error) setError(res.error);
 
     setIsLoading(false);
 
@@ -42,6 +45,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.submitAuthCode(code);
+    if (res.error) setError(res.error);
 
     setIsLoading(false);
 
@@ -52,6 +56,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.submitPassword(password);
+    if (res.error) setError(res.error);
 
     setIsLoading(false);
 
@@ -62,6 +67,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.registerUser(firstName, lastName);
+    if (res.error) setError(res.error);
 
     setIsLoading(false);
 
@@ -72,6 +78,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.getPassword(passwordHint);
+    if (res.error) setError(res.error);
 
     setIsLoading(false);
 
@@ -82,6 +89,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.getCurrentUser();
+    if (res.error) setError(res.error);
 
     setIsLoading(false);
 
@@ -92,6 +100,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.logout();
+    if (res.error) setError(res.error);
 
     setIsLoading(false);
 
@@ -108,6 +117,7 @@ export const useTDL = () => {
     setIsLoading(true);
 
     const res = await window.electronAPI.tdl.init();
+    if (res.error) setError(res.error);
 
     if (res.success) {
       setIsInitialized(true);
