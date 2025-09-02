@@ -1,5 +1,4 @@
 dist
 dist-electron
 node_modules
-
-
+electron/tdlib-types.d.ts

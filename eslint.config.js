@@ -10,7 +10,14 @@ import globals from "globals";
 
 export default [
   {
-    ignores: ["dist", "dist-electron", "node_modules", "**/*.min.js"],
+    ignores: [
+      "dist",
+      "dist-electron",
+      "node_modules",
+      "**/*.min.js",
+      "electron/",
+      "electron/tdlib-types.d.ts",
+    ],
   },
   {
     files: ["**/*.{ts,tsx,js,jsx}"],

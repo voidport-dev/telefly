@@ -2,5 +2,5 @@ dist
 dist-electron
 node_modules
 *.min.js
-
-
+electron/tdlib-types.d.ts
+tdlib-types.d.ts
