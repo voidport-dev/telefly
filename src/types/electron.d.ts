@@ -4,8 +4,7 @@ declare global {
       send: (channel: string, data: any) => void;
       receive: (channel: string, func: Function) => void;
       tdl: {
-        init: (apiId?: number, apiHash?: string) => Promise<{ success: boolean; error?: string }>;
-        initDefault: () => Promise<{ success: boolean; error?: string }>;
+        init: () => Promise<{ success: boolean; error?: string }>;
         loginWithPhone: (phoneNumber: string) => Promise<{ success: boolean; error?: string }>;
         submitAuthCode: (code: string) => Promise<{ success: boolean; error?: string }>;
         resendAuthCode: () => Promise<{ success: boolean; error?: string }>;

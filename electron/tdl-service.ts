@@ -13,11 +13,13 @@ interface TDLResponse {
 export class TDLService {
   private client: any = null;
   private isInitialized = false;
-  private apiId = 0;
-  private apiHash = "your_api_hash_here";
+  private apiId: number;
+  private apiHash: string;
   private currentAuthState: Td.AuthorizationState = { _: "authorizationStateWaitTdlibParameters" };
 
   constructor() {
+    this.apiId = parseInt(process.env.TELEGRAM_API_ID || '0');
+    this.apiHash = process.env.TELEGRAM_API_HASH || '';
     this.setupIPCHandlers();
   }
 
@@ -31,7 +33,7 @@ export class TDLService {
 
   private setupIPCHandlers() {
     ipcMain.handle("tdl-init", async () => {
-      return await this.initialize(this.apiId, this.apiHash);
+      return await this.initialize();
     });
 
     ipcMain.handle("tdl-login-with-phone", async (_, phoneNumber: string) => {
@@ -91,10 +93,10 @@ export class TDLService {
     }
   }
 
-  private async initialize(apiId?: number, apiHash?: string): Promise<TDLResponse> {
+  private async initialize(): Promise<TDLResponse> {
     try {
-      if (!apiId || !apiHash)
-        return { success: false, error: "No API_ID or API_HASH were provided" };
+      if (!this.apiId || !this.apiHash)
+        return { success: false, error: "No API_ID or API_HASH were provided in environment variables" };
 
       if (this.isInitialized) return { success: true };
 
