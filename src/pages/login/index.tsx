@@ -26,8 +26,16 @@ interface DataType {
 }
 
 export default function Login() {
-  const { isInitialized, isLoading, error, init, getAuthState, loginWithPhone, submitAuthCode } =
-    useTDL();
+  const {
+    isInitialized,
+    isLoading,
+    error,
+    init,
+    getAuthState,
+    loginWithPhone,
+    submitAuthCode,
+    submitPassword,
+  } = useTDL();
 
   const navigate = useNavigate();
 
@@ -103,6 +111,15 @@ export default function Login() {
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!data.password) return;
+
+    const result = await submitPassword(data.password);
+    if (result.success) {
+      await checkAuthState();
+      setTimeout(async () => {
+        await checkAuthState();
+      }, 2000);
+    }
   };
 
   const handleRegistrationSubmit = async (e: React.FormEvent) => {
