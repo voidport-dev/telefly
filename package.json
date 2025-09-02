@@ -2,7 +2,6 @@
   "name": "telefly",
   "version": "0.0.1",
   "main": "dist-electron/main.js",
-  "type": "module",
   "scripts": {
     "dev": "concurrently \"bun run dev:renderer\" \"bun run build:electron\" \"bun run start:electron\"",
     "build": "bun run build:renderer && bun run build:electron",

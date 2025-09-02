@@ -69,6 +69,14 @@ export class TDLService {
     ipcMain.handle("tdl-get-password", async (_, passwordHint: string) => {
       return await this.getPassword(passwordHint);
     });
+
+    ipcMain.handle("tdl-step-back", async (_, target: "phone") => {
+      return await this.stepBack(target);
+    });
+
+    ipcMain.handle("tdl-resend-auth-code", async () => {
+      return await this.resendAuthCode();
+    });
   }
 
   private async getAuthState(): Promise<TDLResponse> {
@@ -165,6 +173,24 @@ export class TDLService {
       await this.client.invoke({
         _: "checkAuthenticationCode",
         code: code,
+      });
+
+      await new Promise((resolve) => setTimeout(resolve, 500));
+
+      return { success: true };
+    } catch (error) {
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+    }
+  }
+
+  private async resendAuthCode(): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!this.client || !this.isInitialized) {
+        return { success: false, error: "TDL not initialized" };
+      }
+
+      await this.client.invoke({
+        _: "resendAuthenticationCode",
       });
 
       await new Promise((resolve) => setTimeout(resolve, 500));
@@ -312,6 +338,22 @@ export class TDLService {
         success: false,
         error: error instanceof Error ? error.message : "Unknown error",
       };
+    }
+  }
+
+  private async stepBack(target: "phone"): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (!this.client || !this.isInitialized)
+        return { success: false, error: "TDL not initialized" };
+
+      if (target === "phone") {
+        await this.client.invoke({ _: "logOut" });
+      }
+
+      return { success: true };
+    } catch (error) {
+      console.error("Failed to step back:", error);
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   }
 }

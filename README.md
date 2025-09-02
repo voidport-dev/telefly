@@ -12,6 +12,13 @@ Telefly is a modern, feature-rich desktop application that provides an alternati
 - **Desktop**: Electron
 - **Package Manager**: Compatible with npm, pnpm, and Bun
 
+## Screenshots
+
+![Screenshot](screenshots/1.png)
+![Screenshot](screenshots/2.png)
+![Screenshot](screenshots/3.png)
+![Screenshot](screenshots/4.png)
+
 ## Roadmap
 
 ### v0.1 - In Development

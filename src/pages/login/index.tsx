@@ -35,7 +35,9 @@ export default function Login() {
     getAuthState,
     loginWithPhone,
     submitAuthCode,
+    resendAuthCode,
     submitPassword,
+    stepBack,
   } = useTDL();
 
   const navigate = useNavigate();
@@ -48,6 +50,9 @@ export default function Login() {
     firstName: "",
     lastName: "",
   });
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const isPending = isLoading || isProcessing || isLoggingOut;
 
   useEffect(() => {
     init();
@@ -75,6 +80,7 @@ export default function Login() {
           setData((prev) => ({ ...prev, currentStep: "phone" }));
           break;
         case "authorizationStateWaitCode":
+          setIsProcessing(false);
           setData((prev) => ({ ...prev, currentStep: "code" }));
           break;
         case "authorizationStateWaitPassword":
@@ -84,8 +90,15 @@ export default function Login() {
           setData((prev) => ({ ...prev, currentStep: "registration" }));
           break;
         case "authorizationStateReady":
+          setIsProcessing(false);
           localStorage.setItem("auth", "true");
           navigate("/", { replace: true });
+          break;
+        case "authorizationStateLoggingOut":
+          break;
+        case "authorizationStateClosed":
+          setData((prev) => ({ ...prev, currentStep: "phone" }));
+          localStorage.removeItem("auth");
           break;
         default:
           break;
@@ -95,7 +108,9 @@ export default function Login() {
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!data.phone) return;
+    if (!data.phone || isLoggingOut) return;
+
+    setIsProcessing(true);
 
     await loginWithPhone(data.phone);
   };
@@ -117,6 +132,7 @@ export default function Login() {
     e.preventDefault();
     if (!data.password) return;
 
+    setIsProcessing(true);
     const result = await submitPassword(data.password);
     if (result.success) {
       await checkAuthState();
@@ -130,7 +146,21 @@ export default function Login() {
     e.preventDefault();
   };
 
-  const handleResendCode = async () => {};
+  const handleResendCode = async () => {
+    setIsProcessing(true);
+    await resendAuthCode();
+    setIsProcessing(false);
+  };
+
+  const handleBack = async () => {
+    setIsLoggingOut(true);
+    setData((prev) => ({ ...prev, currentStep: "phone" }));
+    const result = await stepBack("phone");
+    if (!result.success) {
+      setData((prev) => ({ ...prev, currentStep: "code" }));
+    }
+    setIsLoggingOut(false);
+  };
 
   const renderPhoneStep = () => (
     <StepContainer>
@@ -141,11 +171,11 @@ export default function Login() {
           onChange={(e) => setData((prev) => ({ ...prev, phone: e.target.value }))}
           placeholder="+1234567890"
           type="tel"
-          disabled={isLoading}
+          disabled={isPending}
         />
-        <Button type="submit" disabled={!isInitialized || isLoading || !data.phone}>
-          {isLoading && <LoadingSpinner />}
-          {isLoading ? "Sending..." : "Send Code"}
+        <Button type="submit" disabled={!isInitialized || isPending || !data.phone}>
+          {(isLoggingOut || isPending) && <LoadingSpinner />}
+          {isLoggingOut ? "Going back..." : isPending ? "Sending..." : "Send Code"}
         </Button>
       </Form>
     </StepContainer>
@@ -161,20 +191,16 @@ export default function Login() {
           placeholder="12345"
           type="text"
           maxLength={5}
-          disabled={isLoading}
+          disabled={isPending}
         />
-        <Button type="submit" disabled={isLoading || !data.code}>
-          {isLoading && <LoadingSpinner />}
-          {isLoading ? "Verifying..." : "Verify Code"}
+        <Button type="submit" disabled={isPending || !data.code}>
+          {isPending && <LoadingSpinner />}
+          {isPending ? "Verifying..." : "Verify Code"}
         </Button>
-        <Button
-          type="button"
-          onClick={() => setData((prev) => ({ ...prev, currentStep: "phone" }))}
-          disabled={isLoading}
-        >
+        <Button type="button" onClick={handleBack} disabled={isPending}>
           Back to Phone
         </Button>
-        <Button type="button" onClick={handleResendCode} disabled={isLoading}>
+        <Button type="button" onClick={handleResendCode} disabled={isPending}>
           Resend Code
         </Button>
       </Form>
@@ -192,16 +218,16 @@ export default function Login() {
           }}
           placeholder="Enter your password"
           type="password"
-          disabled={isLoading}
+          disabled={isPending}
         />
-        <Button type="submit" disabled={isLoading || !data.password}>
-          {isLoading && <LoadingSpinner />}
-          {isLoading ? "Verifying..." : "Verify Password"}
+        <Button type="submit" disabled={isPending || !data.password}>
+          {isPending && <LoadingSpinner />}
+          {isPending ? "Verifying..." : "Verify Password"}
         </Button>
         <Button
           type="button"
           onClick={() => setData((prev) => ({ ...prev, currentStep: "code" }))}
-          disabled={isLoading}
+          disabled={isPending}
         >
           Back to Code
         </Button>
@@ -218,23 +244,23 @@ export default function Login() {
           onChange={(e) => setData((prev) => ({ ...prev, firstName: e.target.value }))}
           placeholder="First Name"
           type="text"
-          disabled={isLoading}
+          disabled={isPending}
         />
         <Input
           value={data.lastName}
           onChange={(e) => setData((prev) => ({ ...prev, lastName: e.target.value }))}
           placeholder="Last Name (optional)"
           type="text"
-          disabled={isLoading}
+          disabled={isPending}
         />
-        <Button type="submit" disabled={isLoading || !data.firstName}>
-          {isLoading && <LoadingSpinner />}
-          {isLoading ? "Completing..." : "Complete Registration"}
+        <Button type="submit" disabled={isPending || !data.firstName}>
+          {isPending && <LoadingSpinner />}
+          {isPending ? "Completing..." : "Complete Registration"}
         </Button>
         <Button
           type="button"
           onClick={() => setData((prev) => ({ ...prev, currentStep: "password" }))}
-          disabled={isLoading}
+          disabled={isPending}
         >
           Back to Password
         </Button>
