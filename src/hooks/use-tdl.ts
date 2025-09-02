@@ -1,17 +1,5 @@
 import { useCallback, useState } from "react";
 
-interface TDLStatus {
-  success: boolean;
-  status?: string;
-  error?: string;
-  user?: any;
-}
-
-interface TDLResponse {
-  success: boolean;
-  error?: string;
-}
-
 export const useTDL = () => {
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
