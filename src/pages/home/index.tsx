@@ -15,7 +15,7 @@ import {
   Header,
   Input,
 } from "./styled";
-import { useTDL } from "../../hooks/useTDL";
+import { useTDL } from "../../hooks/use-tdl";
 
 export default function Home() {
   const { getCurrentUser, init, logout } = useTDL();
@@ -66,15 +66,18 @@ export default function Home() {
   };
 
   useEffect(() => {
-    init();
-    getCurrentUser().then((user) => {
-      if (user.success) {
-        setUser(user.user);
+    const getUser = async () => {
+      await init();
+      const res = await getCurrentUser();
+
+      if (res.success) {
+        setUser(res.data);
       } else {
         localStorage.removeItem("auth");
         navigate("/login", { replace: true });
       }
-    });
+    };
+    getUser();
   }, []);
 
   return (

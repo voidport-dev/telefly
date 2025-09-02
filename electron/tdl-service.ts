@@ -1,101 +1,96 @@
-const tdl = require("tdl");
-const { getTdjson } = require("prebuilt-tdlib");
-import fs from "fs";
-import path from "path";
 import { ipcMain } from "electron";
+import { getTdjson } from "prebuilt-tdlib";
 
-export interface SimpleResult {
+import * as tdl from "tdl";
+import type * as Td from "tdlib-types";
+
+interface TDLResponse {
   success: boolean;
+  data?: any;
   error?: string;
 }
 
 export class TDLService {
   private client: any = null;
   private isInitialized = false;
-  private defaultApiId = 0;
-  private defaultApiHash = "your_api_hash_here";
-  private currentAuthState: string = "authorizationStateWaitTdlibParameters";
+  private apiId = 0;
+  private apiHash = "your_api_hash_here";
+  private currentAuthState: Td.AuthorizationState = { _: "authorizationStateWaitTdlibParameters" };
 
   constructor() {
     this.setupIPCHandlers();
   }
 
+  private log(content: any) {
+    console.info(`[TDL]\tLOG:\t${content}`);
+  }
+
+  private error(content: any) {
+    console.error(`[TDL]\tERROR:\t${content}`);
+  }
+
   private setupIPCHandlers() {
-    ipcMain.handle("tdl-init", async (event, apiId?: number, apiHash?: string) => {
-      return await this.initialize(apiId, apiHash);
+    ipcMain.handle("tdl-init", async () => {
+      return await this.initialize(this.apiId, this.apiHash);
     });
 
-    ipcMain.handle("tdl-init-default", async () => {
-      return await this.initialize();
-    });
-
-    ipcMain.handle("tdl-login-phone", async (event, phoneNumber: string) => {
+    ipcMain.handle("tdl-login-with-phone", async (_, phoneNumber: string) => {
       return await this.loginWithPhone(phoneNumber);
     });
 
-    ipcMain.handle("tdl-get-auth-code", async (event) => {
-      return await this.getAuthCode();
-    });
-
-    ipcMain.handle("tdl-submit-auth-code", async (event, code: string) => {
+    ipcMain.handle("tdl-submit-auth-code", async (_, code: string) => {
       return await this.submitAuthCode(code);
     });
 
-    ipcMain.handle("tdl-get-password", async (event, passwordHint: string) => {
-      return await this.getPassword(passwordHint);
-    });
-
-    ipcMain.handle("tdl-submit-password", async (event, password: string) => {
-      return await this.submitPassword(password);
-    });
-
-    ipcMain.handle("tdl-register-user", async (event, firstName: string, lastName?: string) => {
-      return await this.registerUser(firstName, lastName);
-    });
-
-    ipcMain.handle("tdl-get-status", async () => {
-      return await this.getStatus();
-    });
-
     ipcMain.handle("tdl-get-auth-state", async () => {
-      return await this.getCurrentAuthState();
+      return await this.getAuthState();
     });
 
-    ipcMain.handle("tdl-close", async () => {
-      return await this.close();
+    ipcMain.handle("tdl-get-current-user", async () => {
+      return await this.getCurrentUser();
     });
 
     ipcMain.handle("tdl-logout", async () => {
       return await this.logout();
     });
 
-    ipcMain.handle("tdl-reset", async () => {
-      return await this.reset();
+    ipcMain.handle("tdl-close", async () => {
+      return await this.close();
     });
 
-    ipcMain.handle("tdl-get-app-info", async () => {
-      return await this.getAppInfo();
+    ipcMain.handle("tdl-submit-password", async (_, password: string) => {
+      return await this.submitPassword(password);
     });
 
-    ipcMain.handle("tdl-get-current-user", async () => {
-      return await this.getCurrentUser();
+    ipcMain.handle("tdl-register-user", async (_, firstName: string, lastName?: string) => {
+      return await this.registerUser(firstName, lastName);
+    });
+
+    ipcMain.handle("tdl-get-password", async (_, passwordHint: string) => {
+      return await this.getPassword(passwordHint);
     });
   }
 
-  private async initialize(
-    apiId?: number,
-    apiHash?: string,
-  ): Promise<{ success: boolean; error?: string }> {
+  private async getAuthState(): Promise<TDLResponse> {
     try {
-      if (this.isInitialized) {
-        return { success: true };
-      }
+      if (!this.client || !this.isInitialized)
+        return { success: false, error: "TDL not initialized" };
 
-      const finalApiId = apiId || this.defaultApiId;
-      const finalApiHash = apiHash || this.defaultApiHash;
+      return { success: true, data: this.currentAuthState._ };
+    } catch (error) {
+      this.error(error);
+      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
+    }
+  }
+
+  private async initialize(apiId?: number, apiHash?: string): Promise<TDLResponse> {
+    try {
+      if (!apiId || !apiHash)
+        return { success: false, error: "No API_ID or API_HASH were provided" };
+
+      if (this.isInitialized) return { success: true };
 
       const tdjsonPath = getTdjson();
-      // Ensure TDLib is configured only once per process
       if (!(tdl as any).__teleflyConfigured) {
         tdl.configure({
           tdjson: tdjsonPath,
@@ -105,133 +100,88 @@ export class TDLService {
       }
 
       this.client = tdl.createClient({
-        apiId: finalApiId,
-        apiHash: finalApiHash,
-        databaseDirectory: "_td_database",
-        filesDirectory: "_td_files",
-        tdlibParameters: {
-          use_message_database: true,
-          use_secret_chats: false,
-          system_language_code: "en",
-          application_version: "1.0",
-          device_model: "Telefly Desktop",
-          system_version: "Unknown",
-          api_id: finalApiId,
-          api_hash: finalApiHash,
-          database_directory: "_td_database",
-          files_directory: "_td_files",
-          use_test_dc: false,
-        },
+        apiId: this.apiId,
+        apiHash: this.apiHash,
       });
 
       this.client.on("error", (error: any) => {
-        console.error("TDL Error:", error);
+        this.error(error);
       });
 
       this.client.on("update", (update: any) => {
         if (update._ === "updateAuthorizationState") {
-          this.currentAuthState = update.authorization_state._;
-          console.log("Authorization state:", this.currentAuthState);
+          this.currentAuthState = update.authorization_state;
+          this.log(this.currentAuthState._);
         }
       });
 
       this.isInitialized = true;
-      return { success: true };
+
+      return {
+        success: true,
+      };
     } catch (error) {
-      console.error("Failed to initialize TDL:", error);
+      this.error(`Failed to initialize TDL due to: ${error}`);
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   }
 
-  public async reset(): Promise<SimpleResult> {
+  private async loginWithPhone(phoneNumber: string): Promise<TDLResponse> {
     try {
-      await this.close();
-      await purgeTDLibData();
-      await recreateDirs();
-      this.isInitialized = false;
-      this.client = null;
-      this.currentAuthState = "authorizationStateWaitTdlibParameters";
-      return { success: true };
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-    }
-  }
+      this.log(`Logging in with phone number: ${phoneNumber}`);
 
-  private async loginWithPhone(phoneNumber: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      if (!this.client || !this.isInitialized) {
+      if (!this.client || !this.isInitialized)
         return { success: false, error: "TDL not initialized" };
-      }
 
-      // Check if we're in the correct state to set phone number
-      if (this.currentAuthState !== "authorizationStateWaitPhoneNumber") {
+      if (this.currentAuthState._ !== "authorizationStateWaitPhoneNumber")
         return {
           success: false,
-          error: `Cannot set phone number in state: ${this.currentAuthState}`,
+          error: `Cannot phone number with state: ${this.currentAuthState._}`,
         };
-      }
 
-      await this.client.invoke({
+      this.client.invoke({
         _: "setAuthenticationPhoneNumber",
         phone_number: phoneNumber,
       });
 
       return { success: true };
     } catch (error) {
-      console.error("Phone login failed:", error);
+      this.error(error);
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   }
 
-  private async getAuthCode(): Promise<{ success: boolean; error?: string }> {
+  private async submitAuthCode(code: string): Promise<TDLResponse> {
     try {
-      if (!this.client || !this.isInitialized) {
+      if (!this.client || !this.isInitialized)
         return { success: false, error: "TDL not initialized" };
-      }
 
-      if (this.currentAuthState !== "authorizationStateWaitCode") {
-        return { success: false, error: "Not waiting for auth code" };
-      }
-
-      return { success: true };
-    } catch (error) {
-      console.error("Get auth code failed:", error);
-      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-    }
-  }
-
-  private async submitAuthCode(code: string): Promise<{ success: boolean; error?: string }> {
-    try {
-      if (!this.client || !this.isInitialized) {
-        return { success: false, error: "TDL not initialized" };
-      }
-
-      if (this.currentAuthState !== "authorizationStateWaitCode") {
-        return { success: false, error: "Not waiting for auth code" };
-      }
+      if (this.currentAuthState._ !== "authorizationStateWaitCode")
+        return {
+          success: false,
+          error: `Cannot submit auth code with state: ${this.currentAuthState}`,
+        };
 
       await this.client.invoke({
         _: "checkAuthenticationCode",
         code: code,
       });
 
-      // Wait a moment for the state to update
       await new Promise((resolve) => setTimeout(resolve, 500));
 
       return { success: true };
     } catch (error) {
-      console.error("Auth code submission failed:", error);
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
     }
   }
 
-  private async getPassword(passwordHint: string): Promise<{ success: boolean; error?: string }> {
+  private async getPassword(_: string): Promise<{ success: boolean; error?: string }> {
     try {
       if (!this.client || !this.isInitialized) {
         return { success: false, error: "TDL not initialized" };
       }
 
-      if (this.currentAuthState !== "authorizationStateWaitPassword") {
+      if (this.currentAuthState._ !== "authorizationStateWaitPassword") {
         return { success: false, error: "Not waiting for password" };
       }
 
@@ -248,7 +198,7 @@ export class TDLService {
         return { success: false, error: "TDL not initialized" };
       }
 
-      if (this.currentAuthState !== "authorizationStateWaitPassword") {
+      if (this.currentAuthState._ !== "authorizationStateWaitPassword") {
         return { success: false, error: "Not waiting for password" };
       }
 
@@ -276,7 +226,7 @@ export class TDLService {
         return { success: false, error: "TDL not initialized" };
       }
 
-      if (this.currentAuthState !== "authorizationStateWaitRegistration") {
+      if (this.currentAuthState._ !== "authorizationStateWaitRegistration") {
         return { success: false, error: "Not waiting for registration" };
       }
 
@@ -290,52 +240,6 @@ export class TDLService {
     } catch (error) {
       console.error("User registration failed:", error);
       return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-    }
-  }
-
-  private async getCurrentAuthState(): Promise<{
-    success: boolean;
-    authState?: string;
-    error?: string;
-  }> {
-    try {
-      if (!this.client || !this.isInitialized) {
-        return { success: false, error: "TDL not initialized" };
-      }
-
-      return { success: true, authState: this.currentAuthState };
-    } catch (error) {
-      return { success: false, error: error instanceof Error ? error.message : "Unknown error" };
-    }
-  }
-
-  private async getStatus(): Promise<{
-    success: boolean;
-    status?: string;
-    error?: string;
-    user?: any;
-  }> {
-    try {
-      if (!this.client || !this.isInitialized) {
-        return { success: false, error: "TDL not initialized" };
-      }
-
-      if (this.currentAuthState === "authorizationStateReady") {
-        try {
-          const me = await this.client.invoke({ _: "getMe" });
-          return { success: true, status: "logged_in", user: me };
-        } catch (error) {
-          return { success: false, status: "error_getting_user", error: "Failed to get user info" };
-        }
-      }
-
-      return { success: true, status: this.currentAuthState };
-    } catch (error) {
-      return {
-        success: false,
-        status: "error",
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
     }
   }
 
@@ -363,7 +267,7 @@ export class TDLService {
         await this.client.close();
         this.client = null;
         this.isInitialized = false;
-        this.currentAuthState = "authorizationStateWaitTdlibParameters";
+        this.currentAuthState = { _: "authorizationStateWaitTdlibParameters" };
       }
       return { success: true };
     } catch (error) {
@@ -372,27 +276,13 @@ export class TDLService {
     }
   }
 
-  private async getCurrentUser(): Promise<{
-    success: boolean;
-    user?: {
-      id: number;
-      firstName: string;
-      lastName?: string;
-      username?: string;
-      phoneNumber?: string;
-      isVerified: boolean;
-      isPremium: boolean;
-      status?: string;
-      profilePhoto?: any;
-    };
-    error?: string;
-  }> {
+  private async getCurrentUser(): Promise<TDLResponse> {
     try {
       if (!this.client || !this.isInitialized) {
         return { success: false, error: "TDL not initialized" };
       }
 
-      if (this.currentAuthState !== "authorizationStateReady") {
+      if (this.currentAuthState._ !== "authorizationStateReady") {
         return { success: false, error: "User not authorized" };
       }
 
@@ -401,7 +291,7 @@ export class TDLService {
       if (me) {
         return {
           success: true,
-          user: {
+          data: {
             id: me.id,
             firstName: me.first_name || "",
             lastName: me.last_name || "",
@@ -424,72 +314,4 @@ export class TDLService {
       };
     }
   }
-
-  private async getAppInfo(): Promise<{
-    success: boolean;
-    apiId?: number;
-    apiHash?: string;
-    appTitle?: string;
-    appShortName?: string;
-    isInitialized?: boolean;
-    error?: string;
-  }> {
-    try {
-      if (!this.isInitialized) {
-        return {
-          success: true,
-          apiId: this.defaultApiId,
-          apiHash: this.defaultApiHash,
-          appTitle: "telefly",
-          appShortName: "telefly",
-          isInitialized: false,
-        };
-      }
-
-      return {
-        success: true,
-        apiId: this.client?.apiId || this.defaultApiId,
-        apiHash: this.client?.apiHash || this.defaultApiHash,
-        appTitle: "telefly",
-        appShortName: "telefly",
-        isInitialized: true,
-      };
-    } catch (error) {
-      console.error("Failed to get app info:", error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : "Unknown error",
-      };
-    }
-  }
 }
-
-export async function removeDirectory(target: string) {
-  try {
-    await fs.promises.rm(target, { recursive: true, force: true });
-  } catch {}
-}
-
-export async function pathFromRoot(p: string) {
-  try {
-    return path.isAbsolute(p) ? p : path.join(process.cwd(), p);
-  } catch {
-    return p;
-  }
-}
-
-export async function purgeTDLibData() {
-  const dbDir = await pathFromRoot("_td_database");
-  const filesDir = await pathFromRoot("_td_files");
-  await removeDirectory(dbDir);
-  await removeDirectory(filesDir);
-}
-
-export async function recreateDirs() {
-  try {
-    await fs.promises.mkdir("_td_database", { recursive: true });
-    await fs.promises.mkdir("_td_files", { recursive: true });
-  } catch {}
-}
-
-// SimpleResult declared above
