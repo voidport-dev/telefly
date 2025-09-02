@@ -26,6 +26,7 @@ interface DataType {
 }
 
 export default function Login() {
+  const [isInitializing, setIsInitializing] = useState(true);
   const {
     isInitialized,
     isLoading,
@@ -54,7 +55,10 @@ export default function Login() {
 
   useEffect(() => {
     if (isInitialized) {
-      checkAuthState();
+      setTimeout(() => {
+        checkAuthState();
+        setIsInitializing(false);
+      }, 200);
 
       const interval = setInterval(checkAuthState, 2000);
 
@@ -265,7 +269,13 @@ export default function Login() {
 
   return (
     <Container>
-      {renderCurrentStep()}
+      {isInitializing ? (
+        <StepContainer>
+          <StepTitle>Initializing TDLib...</StepTitle>
+        </StepContainer>
+      ) : (
+        renderCurrentStep()
+      )}
       {error && <ErrorMessage>{error}</ErrorMessage>}
     </Container>
   );

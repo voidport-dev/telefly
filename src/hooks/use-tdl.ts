@@ -36,7 +36,9 @@ export const useTDL = () => {
     const res = await window.electronAPI.tdl.loginWithPhone(phone);
     if (res.error) setError(res.error);
 
-    setIsLoading(false);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 2000);
 
     return res;
   }, []);
