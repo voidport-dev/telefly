@@ -8,6 +8,7 @@ declare global {
         initDefault: () => Promise<{ success: boolean; error?: string }>;
         loginWithPhone: (phoneNumber: string) => Promise<{ success: boolean; error?: string }>;
         submitAuthCode: (code: string) => Promise<{ success: boolean; error?: string }>;
+        resendAuthCode: () => Promise<{ success: boolean; error?: string }>;
         getAuthState: () => Promise<{ success: boolean; data?: any; error?: string }>;
         getCurrentUser: () => Promise<{ success: boolean; data?: any; error?: string }>;
         logout: () => Promise<{ success: boolean; error?: string }>;
@@ -18,6 +19,7 @@ declare global {
           lastName?: string,
         ) => Promise<{ success: boolean; error?: string }>;
         getPassword: (passwordHint: string) => Promise<{ success: boolean; error?: string }>;
+        stepBack: (target: "phone") => Promise<{ success: boolean; error?: string }>;
       };
     };
   }

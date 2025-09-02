@@ -118,12 +118,29 @@ export const useTDL = () => {
     setIsLoading(false);
   }, []);
 
+  const stepBack = useCallback(async (target: "phone") => {
+    setIsLoading(true);
+    const res = await window.electronAPI.tdl.stepBack(target);
+    if (res.error) setError(res.error);
+    setIsLoading(false);
+    return res;
+  }, []);
+
+  const resendAuthCode = useCallback(async () => {
+    setIsLoading(true);
+    const res = await window.electronAPI.tdl.resendAuthCode();
+    if (res.error) setError(res.error);
+    setIsLoading(false);
+    return res;
+  }, []);
+
   return {
     isInitialized,
     isLoading,
     error,
     loginWithPhone,
     submitAuthCode,
+    resendAuthCode,
     submitPassword,
     registerUser,
     init,
@@ -132,5 +149,6 @@ export const useTDL = () => {
     logout,
     getPassword,
     close,
+    stepBack,
   };
 };

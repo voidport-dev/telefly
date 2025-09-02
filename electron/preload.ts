@@ -11,6 +11,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
     init: () => ipcRenderer.invoke("tdl-init"),
     loginWithPhone: (phone: string) => ipcRenderer.invoke("tdl-login-with-phone", phone),
     submitAuthCode: (code: string) => ipcRenderer.invoke("tdl-submit-auth-code", code),
+    resendAuthCode: () => ipcRenderer.invoke("tdl-resend-auth-code"),
     getAuthState: () => ipcRenderer.invoke("tdl-get-auth-state"),
     getCurrentUser: () => ipcRenderer.invoke("tdl-get-current-user"),
     logout: () => ipcRenderer.invoke("tdl-logout"),
@@ -19,5 +20,6 @@ contextBridge.exposeInMainWorld("electronAPI", {
     registerUser: (firstName: string, lastName?: string) =>
       ipcRenderer.invoke("tdl-register-user", firstName, lastName),
     getPassword: (passwordHint: string) => ipcRenderer.invoke("tdl-get-password", passwordHint),
+    stepBack: (target: "phone") => ipcRenderer.invoke("tdl-step-back", target),
   },
 });
