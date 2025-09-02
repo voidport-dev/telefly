@@ -9,5 +9,15 @@ contextBridge.exposeInMainWorld("electronAPI", {
   },
   tdl: {
     init: () => ipcRenderer.invoke("tdl-init"),
+    loginWithPhone: (phone: string) => ipcRenderer.invoke("tdl-login-with-phone", phone),
+    submitAuthCode: (code: string) => ipcRenderer.invoke("tdl-submit-auth-code", code),
+    getAuthState: () => ipcRenderer.invoke("tdl-get-auth-state"),
+    getCurrentUser: () => ipcRenderer.invoke("tdl-get-current-user"),
+    logout: () => ipcRenderer.invoke("tdl-logout"),
+    close: () => ipcRenderer.invoke("tdl-close"),
+    submitPassword: (password: string) => ipcRenderer.invoke("tdl-submit-password", password),
+    registerUser: (firstName: string, lastName?: string) =>
+      ipcRenderer.invoke("tdl-register-user", firstName, lastName),
+    getPassword: (passwordHint: string) => ipcRenderer.invoke("tdl-get-password", passwordHint),
   },
 });

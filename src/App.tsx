@@ -9,6 +9,7 @@ const router = createHashRouter([
     loader: () => {
       const auth = localStorage.getItem("auth");
       if (!auth) throw redirect("/login");
+
       return null;
     },
     element: <Home />,
@@ -18,6 +19,7 @@ const router = createHashRouter([
     loader: () => {
       const auth = localStorage.getItem("auth");
       if (auth) throw redirect("/");
+
       return null;
     },
     element: <Login />,

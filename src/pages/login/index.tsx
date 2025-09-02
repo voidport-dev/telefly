@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { useNavigate } from "react-router-dom";
 
+import { useTDL } from "../../hooks/use-tdl";
 import {
   Form,
   Container,
@@ -11,8 +12,7 @@ import {
   StepContainer,
   StepTitle,
   LoadingSpinner,
-} from "./styled";
-import { useTDL } from "../../hooks/use-tdl";
+} from "../../types/styled";
 
 type AuthStep = "phone" | "code" | "password" | "registration";
 
@@ -26,7 +26,8 @@ interface DataType {
 }
 
 export default function Login() {
-  const { isInitialized, isLoading, error, init } = useTDL();
+  const { isInitialized, isLoading, error, init, getAuthState, loginWithPhone, submitAuthCode } =
+    useTDL();
 
   const navigate = useNavigate();
 
@@ -43,16 +44,61 @@ export default function Login() {
     init();
   }, []);
 
-  const checkAuthState = async () => {};
+  useEffect(() => {
+    if (isInitialized) {
+      checkAuthState();
+
+      const interval = setInterval(checkAuthState, 2000);
+
+      return () => clearInterval(interval);
+    }
+  }, [isInitialized]);
+
+  const checkAuthState = async () => {
+    const authState = await getAuthState();
+
+    if (authState.success && authState.data) {
+      switch (authState.data) {
+        case "authorizationStateWaitPhoneNumber":
+          setData((prev) => ({ ...prev, currentStep: "phone" }));
+          break;
+        case "authorizationStateWaitCode":
+          setData((prev) => ({ ...prev, currentStep: "code" }));
+          break;
+        case "authorizationStateWaitPassword":
+          setData((prev) => ({ ...prev, currentStep: "password" }));
+          break;
+        case "authorizationStateWaitRegistration":
+          setData((prev) => ({ ...prev, currentStep: "registration" }));
+          break;
+        case "authorizationStateReady":
+          localStorage.setItem("auth", "true");
+          navigate("/", { replace: true });
+          break;
+        default:
+          break;
+      }
+    }
+  };
 
   const handlePhoneSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!data.phone) return;
+
+    await loginWithPhone(data.phone);
   };
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!data.code) return;
+
+    const result = await submitAuthCode(data.code);
+    if (result.success) {
+      await checkAuthState();
+      setTimeout(async () => {
+        await checkAuthState();
+      }, 2000);
+    }
   };
 
   const handlePasswordSubmit = async (e: React.FormEvent) => {
