@@ -18,8 +18,8 @@ export class TDLService {
   private currentAuthState: Td.AuthorizationState = { _: "authorizationStateWaitTdlibParameters" };
 
   constructor() {
-    this.apiId = parseInt(process.env.TELEGRAM_API_ID || '0');
-    this.apiHash = process.env.TELEGRAM_API_HASH || '';
+    this.apiId = parseInt(process.env.TELEGRAM_API_ID || "0");
+    this.apiHash = process.env.TELEGRAM_API_HASH || "";
     this.setupIPCHandlers();
   }
 
@@ -96,7 +96,10 @@ export class TDLService {
   private async initialize(): Promise<TDLResponse> {
     try {
       if (!this.apiId || !this.apiHash)
-        return { success: false, error: "No API_ID or API_HASH were provided in environment variables" };
+        return {
+          success: false,
+          error: "No API_ID or API_HASH were provided in environment variables",
+        };
 
       if (this.isInitialized) return { success: true };
 
