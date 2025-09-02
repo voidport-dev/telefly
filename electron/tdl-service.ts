@@ -15,6 +15,7 @@ export class TDLService {
   private isInitialized = false;
   private apiId: number;
   private apiHash: string;
+
   private currentAuthState: Td.AuthorizationState = { _: "authorizationStateWaitTdlibParameters" };
 
   constructor() {
