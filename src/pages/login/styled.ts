@@ -61,14 +61,14 @@ export const Button = styled.button`
   border-radius: 4px;
   transition: background 0.2s ease-in-out;
 
-  &:hover:not(:disabled) {
-    background: #444;
-  }
-
   &:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     background: #222;
+  }
+
+  &:hover:not(:disabled) {
+    background: #444;
   }
 `;
 

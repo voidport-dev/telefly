@@ -1,5 +1,6 @@
 import { ipcMain } from "electron";
 import { getTdjson } from "prebuilt-tdlib";
+
 import * as tdl from "tdl";
 import type * as Td from "tdlib-types";
 
@@ -21,7 +22,7 @@ export class TDLService {
   }
 
   private log(content: any) {
-    console.log(`[TDL]\tLOG:\t${content}`);
+    console.info(`[TDL]\tLOG:\t${content}`);
   }
 
   private error(content: any) {
@@ -174,7 +175,7 @@ export class TDLService {
     }
   }
 
-  private async getPassword(passwordHint: string): Promise<{ success: boolean; error?: string }> {
+  private async getPassword(_: string): Promise<{ success: boolean; error?: string }> {
     try {
       if (!this.client || !this.isInitialized) {
         return { success: false, error: "TDL not initialized" };
