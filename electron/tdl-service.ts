@@ -135,7 +135,7 @@ export class TDLService {
       if (this.currentAuthState._ !== "authorizationStateWaitPhoneNumber")
         return {
           success: false,
-          error: `Cannot phone number with state: ${this.currentAuthState}`,
+          error: `Cannot phone number with state: ${this.currentAuthState._}`,
         };
 
       this.client.invoke({
