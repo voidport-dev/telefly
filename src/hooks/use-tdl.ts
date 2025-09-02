@@ -1,8 +1,22 @@
+import { useState } from "react";
+
+interface TDLStatus {
+  success: boolean;
+  status?: string;
+  error?: string;
+  user?: any;
+}
+
+interface TDLResponse {
+  success: boolean;
+  error?: string;
+}
+
 export const useTDL = () => {
-  let isInitialized = false;
-  let isLoading = false;
-  let error = null;
-  let status = "";
+  const [isInitialized, setIsInitialized] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [status, setStatus] = useState<TDLStatus | null>(null);
 
   const loginWithPhone = () => {};
 
@@ -14,7 +28,19 @@ export const useTDL = () => {
 
   const clearError = () => {};
 
-  const init = () => {};
+  const init = async () => {
+    setIsLoading(true);
+
+    const res = await window.electronAPI.tdl.init();
+
+    if (res.success) {
+      setIsInitialized(true);
+    } else {
+      setError(res.error || "Unknown error");
+    }
+
+    setIsLoading(false);
+  };
 
   const getAuthState = () => {};
 

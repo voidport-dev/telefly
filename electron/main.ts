@@ -1,5 +1,6 @@
 import { app, BrowserWindow } from "electron";
 import path from "path";
+import { TDLService } from "./tdl-service";
 
 function createWindow() {
   const mainWindow = new BrowserWindow({
@@ -16,6 +17,8 @@ function createWindow() {
       devTools: true,
     },
   });
+
+  const _ = new TDLService();
 
   if (process.env.NODE_ENV === "development") {
     mainWindow.loadURL("http://localhost:3000/index.html", {

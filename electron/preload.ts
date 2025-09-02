@@ -7,5 +7,7 @@ contextBridge.exposeInMainWorld("electronAPI", {
   receive: (channel: string, func: Function) => {
     ipcRenderer.on(channel, (event, ...args) => func(...args));
   },
-  tdl: {},
+  tdl: {
+    init: () => ipcRenderer.invoke("tdl-init"),
+  },
 });
